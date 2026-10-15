@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Solid Outer Shield / Hexagon -->
+  <polygon points="50,4 92,26 92,74 50,96 8,74 8,26" fill="#2563EB"/>
+  <!-- Inner Solid Cutout -->
+  <polygon points="50,16 80,32 80,68 50,84 20,68 20,32" fill="#0F172A"/>
+  <!-- Letter 'U' Trace in White -->
+  <path d="M32 36 V62 C32 70 40 74 50 74 C60 74 68 70 68 62 V36 H58 V60 C58 63 54 65 50 65 C46 65 42 63 42 60 V36 H32 Z" fill="#FFFFFF"/>
+  <!-- Central Electric Power Bolt -->
+  <polygon points="50,28 56,42 49,42 53,56 42,44 48,44" fill="#F59E0B"/>
+</svg>

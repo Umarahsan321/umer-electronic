@@ -1,26 +1,46 @@
 {
-  "name": "umer-electronic",
-  "version": "0.1.0",
+  "name": "umer-electronics-monorepo",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "concurrently -n \"SERVER,WEB,ADMIN\" -c \"blue,green,magenta\" \"npm run dev:server\" \"npm run dev:web\" \"npm run dev:admin\"",
+    "dev:all": "concurrently -n \"SERVER,WEB,ADMIN\" -c \"blue,green,magenta\" \"npm run dev:server\" \"npm run dev:web\" \"npm run dev:admin\"",
+    "dev:server": "npm run dev --workspace=@umer/server",
+    "dev:web": "npm run dev --workspace=@umer/web",
+    "dev:admin": "npm run dev --workspace=@umer/admin",
+    "build:shared": "npm run build --workspace=@umer/shared",
+    "build:server": "npm run build --workspace=@umer/server",
+    "build:admin": "npm run build --workspace=@umer/admin",
+    "build:web": "npm run build --workspace=@umer/web",
+    "build:all": "npm run build:shared && npm run build:server && npm run build:admin && npm run build:web",
+    "build": "npm run build:all",
+    "test:manual": "node scripts/manual-test.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "lucide-react": "^1.16.0",
     "next": "16.4.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.17.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.19.2",
+    "typescript": "^5",
+    "vite": "^6.1.0"
   }
 }
