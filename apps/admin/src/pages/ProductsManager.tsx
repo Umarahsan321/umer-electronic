@@ -173,7 +173,7 @@ export const ProductsManager: React.FC = () => {
   });
 
   return (
-    <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ padding: '16px 16px 32px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Top Action Bar */}
       <div style={{
         display: 'flex',
@@ -182,12 +182,12 @@ export const ProductsManager: React.FC = () => {
         flexWrap: 'wrap',
         gap: '16px',
         backgroundColor: 'var(--bg-surface)',
-        padding: '20px',
+        padding: '16px',
         borderRadius: '12px',
         border: '1px solid var(--border-color)'
       }}>
         {/* Search & Category Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '300px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px', flex: 1, minWidth: '220px' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',

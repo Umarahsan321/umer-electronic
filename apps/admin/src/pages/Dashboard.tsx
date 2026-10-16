@@ -78,12 +78,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div style={{ padding: '16px 16px 32px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* KPI Cards Row */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '20px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: '16px'
       }}>
         {kpis.map((kpi, idx) => {
           const Icon = kpi.icon;
@@ -128,7 +128,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       </div>
 
       {/* Two Column Section: Recent Orders & Quick Controls */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
         {/* Recent Orders Card */}
         <div style={{
           backgroundColor: 'var(--bg-surface)',

@@ -10,6 +10,7 @@ import { Settings } from './pages/Settings';
 
 export const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<AdminTab>('dashboard');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const tabTitles: Record<AdminTab, { title: string; subtitle: string }> = {
     dashboard: {
@@ -53,13 +54,19 @@ export const AppContent: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-main)' }}>
-      <AdminSidebar currentTab={currentTab} onSelectTab={setCurrentTab} />
+      <AdminSidebar
+        currentTab={currentTab}
+        onSelectTab={setCurrentTab}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+      />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <AdminHeader
           title={tabTitles[currentTab].title}
           subtitle={tabTitles[currentTab].subtitle}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)}
         />
-        <main style={{ flex: 1 }}>
+        <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
           {renderContent()}
         </main>
       </div>

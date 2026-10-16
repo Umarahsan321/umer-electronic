@@ -88,7 +88,7 @@ export const OrdersManager: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ padding: '16px 16px 32px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Search & Filter Bar */}
       <div style={{
         display: 'flex',

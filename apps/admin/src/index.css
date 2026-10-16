@@ -51,6 +51,7 @@ body {
   min-height: 100vh;
   transition: background-color 0.2s ease, color 0.2s ease;
   line-height: 1.5;
+  overflow-x: hidden;
 }
 
 /* Zero Gradients Rule */
@@ -65,4 +66,30 @@ button {
 
 input, select, textarea {
   font-family: inherit;
+}
+
+/* Responsive Table Wrapper Utility */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive helper classes */
+@media (max-width: 1024px) {
+  .admin-sidebar-desktop {
+    display: none !important;
+  }
+  .admin-mobile-only {
+    display: flex !important;
+  }
+  .admin-desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .admin-mobile-only {
+    display: none !important;
+  }
 }

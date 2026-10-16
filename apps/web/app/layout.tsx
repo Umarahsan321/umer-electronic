@@ -1,10 +1,12 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '../context/ThemeContext';
 import { CartProvider } from '../context/CartContext';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { CartDrawer } from '../components/layout/CartDrawer';
+import { MobileBottomNav } from '../components/layout/MobileBottomNav';
+import { FloatingWhatsApp } from '../components/common/FloatingWhatsApp';
 
 export const metadata: Metadata = {
   title: 'Umer Electronics — Smart Tech & Modern Living',
@@ -16,6 +18,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -23,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased min-h-screen flex flex-col">
+      <body className="antialiased min-h-screen flex flex-col pb-16 md:pb-0">
         <ThemeProvider>
           <CartProvider>
             <Navbar />
@@ -32,6 +40,8 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <MobileBottomNav />
+            <FloatingWhatsApp />
           </CartProvider>
         </ThemeProvider>
       </body>
