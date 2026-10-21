@@ -72,6 +72,21 @@ function ProductsCatalogContent() {
       });
   }, []);
 
+  // Lock body scroll and listen for Escape key when mobile filter is open
+  useEffect(() => {
+    if (!mobileFilterOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileFilterOpen(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [mobileFilterOpen]);
+
   // Fetch Products with filters & pagination
   const fetchFilteredProducts = () => {
     setLoading(true);

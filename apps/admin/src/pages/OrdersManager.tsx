@@ -10,9 +10,13 @@ import {
   X,
   Phone,
   Mail,
-  MapPin
+  MapPin,
+  Trash2,
+  ExternalLink,
+  MessageSquare
 } from 'lucide-react';
 import { Order, OrderStatus } from '../../../../packages/shared/src/types/index';
+import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 
 export const OrdersManager: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -20,6 +24,10 @@ export const OrdersManager: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  // Cancellation / Deletion Modal State
+  const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const fetchOrders = () => {
     setLoading(true);
@@ -41,6 +49,14 @@ export const OrdersManager: React.FC = () => {
   }, []);
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
+    if (newStatus === 'cancelled') {
+      const ord = orders.find(o => o.id === orderId);
+      if (ord) {
+        setOrderToCancel(ord);
+        return;
+      }
+    }
+
     try {
       const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
         method: 'PUT',
@@ -55,12 +71,31 @@ export const OrdersManager: React.FC = () => {
       }
     } catch (err) {
       console.error('Error updating order status:', err);
-      // local update fallback
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, orderStatus: newStatus } : o));
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, orderStatus: newStatus } : null);
       }
     }
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!orderToCancel) return;
+    setIsCancelling(true);
+    try {
+      await fetch(`http://localhost:5000/api/orders/${orderToCancel.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' })
+      });
+    } catch (err) {
+      console.warn('Failed to update status on server:', err);
+    }
+    setOrders(prev => prev.map(o => o.id === orderToCancel.id ? { ...o, orderStatus: 'cancelled' } : o));
+    if (selectedOrder && selectedOrder.id === orderToCancel.id) {
+      setSelectedOrder(prev => prev ? { ...prev, orderStatus: 'cancelled' } : null);
+    }
+    setIsCancelling(false);
+    setOrderToCancel(null);
   };
 
   const filteredOrders = orders.filter(o => {
@@ -97,40 +132,51 @@ export const OrdersManager: React.FC = () => {
         flexWrap: 'wrap',
         gap: '16px',
         backgroundColor: 'var(--bg-surface)',
-        padding: '20px',
+        padding: '16px',
         borderRadius: '12px',
         border: '1px solid var(--border-color)'
       }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          backgroundColor: 'var(--bg-elevated)',
-          border: '1px solid var(--border-color)',
-          borderRadius: '8px',
-          padding: '8px 14px',
-          flex: 1,
-          maxWidth: '450px'
-        }}>
-          <Search size={16} color="var(--text-secondary)" />
-          <input
-            type="text"
-            placeholder="Search order #, customer name, or phone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              backgroundColor: 'transparent',
-              border: 'none',
-              outline: 'none',
-              color: 'var(--text-primary)',
-              fontSize: '0.85rem',
-              width: '100%'
-            }}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ShoppingBag size={22} color="var(--primary)" />
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              Orders ({filteredOrders.length})
+            </h2>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+              Track customer purchases, fulfillment status, and receipts
+            </p>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Filter Status:</span>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px', flex: 1, minWidth: '220px', justifyContent: 'flex-end' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backgroundColor: 'var(--bg-elevated)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            padding: '8px 14px',
+            flex: 1,
+            maxWidth: '320px'
+          }}>
+            <Search size={16} color="var(--text-secondary)" />
+            <input
+              type="text"
+              placeholder="Search by order #, customer, phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--text-primary)',
+                fontSize: '0.85rem',
+                width: '100%'
+              }}
+            />
+          </div>
+
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -143,7 +189,7 @@ export const OrdersManager: React.FC = () => {
               fontSize: '0.85rem'
             }}
           >
-            <option value="all">All Statuses ({orders.length})</option>
+            <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
             <option value="shipped">Shipped</option>
@@ -153,8 +199,8 @@ export const OrdersManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Orders Table */}
-      <div style={{
+      {/* Orders Table (Desktop View >= 769px) */}
+      <div className="admin-desktop-table" style={{
         backgroundColor: 'var(--bg-surface)',
         border: '1px solid var(--border-color)',
         borderRadius: '12px',
@@ -177,7 +223,6 @@ export const OrdersManager: React.FC = () => {
               {filteredOrders.length > 0 ? (
                 filteredOrders.map(order => {
                   const badge = getStatusBadge(order.orderStatus);
-                  const Icon = badge.icon;
                   return (
                     <tr key={order.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '14px 16px', fontWeight: 800, color: 'var(--primary)' }}>
@@ -233,24 +278,43 @@ export const OrdersManager: React.FC = () => {
                         </select>
                       </td>
                       <td style={{ padding: '14px 16px', textAlign: 'right' }}>
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          style={{
-                            padding: '6px 12px',
-                            backgroundColor: 'var(--bg-elevated)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '6px',
-                            color: 'var(--text-primary)',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            fontWeight: 600,
-                            fontSize: '0.8rem'
-                          }}
-                        >
-                          <Eye size={15} />
-                          <span>View</span>
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: '8px' }}>
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: 'var(--bg-elevated)',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '6px',
+                              color: 'var(--text-primary)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontWeight: 600,
+                              fontSize: '0.8rem',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Eye size={15} />
+                            <span>View</span>
+                          </button>
+                          {order.orderStatus !== 'cancelled' && (
+                            <button
+                              onClick={() => setOrderToCancel(order)}
+                              title="Cancel Order"
+                              style={{
+                                padding: '6px 10px',
+                                backgroundColor: 'var(--danger-light)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '6px',
+                                color: 'var(--danger)',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <XCircle size={15} />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -267,35 +331,152 @@ export const OrdersManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Order Detail Modal */}
+      {/* Orders Mobile Card Stack (< 768px) */}
+      <div className="admin-mobile-cards">
+        {filteredOrders.length > 0 ? (
+          filteredOrders.map(order => {
+            const badge = getStatusBadge(order.orderStatus);
+            return (
+              <div
+                key={order.id}
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--primary)' }}>
+                      {order.orderNumber}
+                    </span>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      {new Date(order.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                  <span style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    backgroundColor: badge.bg,
+                    color: badge.color
+                  }}>
+                    {order.orderStatus}
+                  </span>
+                </div>
+
+                <div style={{
+                  backgroundColor: 'var(--bg-elevated)',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  fontSize: '0.8rem'
+                }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{order.customer.fullName}</div>
+                  <div style={{ color: 'var(--text-secondary)' }}>{order.customer.phone} • {order.customer.city}</div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--border-color)' }}>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      {order.items.reduce((s, i) => s + i.quantity, 0)} items ({order.paymentMethod.toUpperCase()})
+                    </div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--text-primary)' }}>
+                      ${order.total.toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      style={{
+                        padding: '8px 14px',
+                        backgroundColor: 'var(--bg-elevated)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        color: 'var(--primary)',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Eye size={15} />
+                      <span>Receipt</span>
+                    </button>
+                    {order.orderStatus !== 'cancelled' && (
+                      <button
+                        onClick={() => setOrderToCancel(order)}
+                        title="Cancel Order"
+                        style={{
+                          padding: '8px 10px',
+                          backgroundColor: 'var(--danger-light)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          color: 'var(--danger)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <XCircle size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-surface)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            No orders found.
+          </div>
+        )}
+      </div>
+
+      {/* Order Detail / Receipt Modal */}
       {selectedOrder && (
         <div style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          inset: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 999,
-          padding: '20px'
-        }}>
+          zIndex: 9998,
+          padding: '16px'
+        }}
+        onClick={() => setSelectedOrder(null)}
+        >
           <div style={{
             backgroundColor: 'var(--bg-surface)',
             border: '1px solid var(--border-color)',
-            borderRadius: '14px',
+            borderRadius: '16px',
             width: '100%',
-            maxWidth: '650px',
+            maxWidth: '640px',
             maxHeight: '90vh',
             overflowY: 'auto',
-            padding: '28px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            padding: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            position: 'relative'
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  Order Details: {selectedOrder.orderNumber}
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Order #{selectedOrder.orderNumber}
                 </h2>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                   Placed on {new Date(selectedOrder.createdAt).toLocaleString()}
@@ -303,7 +484,7 @@ export const OrdersManager: React.FC = () => {
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                style={{ backgroundColor: 'transparent', border: 'none', color: 'var(--text-secondary)' }}
+                style={{ backgroundColor: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
               >
                 <X size={20} />
               </button>
@@ -312,36 +493,61 @@ export const OrdersManager: React.FC = () => {
             {/* Customer Information Card */}
             <div style={{
               backgroundColor: 'var(--bg-elevated)',
-              borderRadius: '8px',
+              borderRadius: '10px',
               padding: '16px',
-              marginBottom: '20px',
+              marginBottom: '18px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '8px',
+              gap: '10px',
               border: '1px solid var(--border-color)'
             }}>
-              <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                Customer & Shipping
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                <strong>Name:</strong> {selectedOrder.customer.fullName}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Customer & Shipping
+                </h3>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)' }}>
+                  Payment: {selectedOrder.paymentMethod.toUpperCase()} ({selectedOrder.paymentStatus})
+                </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                <Phone size={14} color="var(--primary)" /> {selectedOrder.customer.phone}
+
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                <strong>Recipient:</strong> {selectedOrder.customer.fullName}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                <Mail size={14} color="var(--primary)" /> {selectedOrder.customer.email}
+
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '14px', fontSize: '0.82rem' }}>
+                <a
+                  href={`tel:${selectedOrder.customer.phone}`}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
+                >
+                  <Phone size={14} /> {selectedOrder.customer.phone}
+                </a>
+                <a
+                  href={`https://wa.me/${selectedOrder.customer.phone.replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#16a34a', textDecoration: 'none', fontWeight: 600 }}
+                >
+                  <MessageSquare size={14} /> WhatsApp
+                </a>
+                <a
+                  href={`mailto:${selectedOrder.customer.email}`}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
+                >
+                  <Mail size={14} /> {selectedOrder.customer.email}
+                </a>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                <MapPin size={14} color="var(--primary)" /> {selectedOrder.customer.address}, {selectedOrder.customer.city} ({selectedOrder.customer.postalCode})
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                <MapPin size={15} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <span>{selectedOrder.customer.address}, {selectedOrder.customer.city} ({selectedOrder.customer.postalCode})</span>
               </div>
             </div>
 
             {/* Items Purchased */}
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px' }}>
               Purchased Electronics
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
               {selectedOrder.items.map((item, idx) => (
                 <div
                   key={idx}
@@ -349,17 +555,17 @@ export const OrdersManager: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 14px',
+                    padding: '10px 12px',
                     borderRadius: '8px',
                     backgroundColor: 'var(--bg-elevated)',
                     border: '1px solid var(--border-color)'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }}
+                      style={{ width: '42px', height: '42px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#ffffff', border: '1px solid var(--border-color)', padding: '2px' }}
                     />
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{item.name}</div>
@@ -410,16 +616,40 @@ export const OrdersManager: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+            {/* Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '18px' }}>
+              <div>
+                {selectedOrder.orderStatus !== 'cancelled' && (
+                  <button
+                    onClick={() => {
+                      setOrderToCancel(selectedOrder);
+                    }}
+                    style={{
+                      padding: '8px 14px',
+                      backgroundColor: 'var(--danger-light)',
+                      color: 'var(--danger)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel Order
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => setSelectedOrder(null)}
                 style={{
-                  padding: '10px 20px',
+                  padding: '9px 20px',
                   backgroundColor: 'var(--primary)',
                   color: '#FFFFFF',
                   borderRadius: '8px',
                   border: 'none',
-                  fontWeight: 700
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
                 }}
               >
                 Close Receipt
@@ -428,6 +658,27 @@ export const OrdersManager: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Cancel Order Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={Boolean(orderToCancel)}
+        title="Cancel Customer Order"
+        message={`Are you sure you want to cancel order #${orderToCancel?.orderNumber} placed by ${orderToCancel?.customer.fullName}? The order status will be changed to Cancelled.`}
+        itemDetails={
+          orderToCancel
+            ? {
+                name: `Order #${orderToCancel.orderNumber}`,
+                type: `${orderToCancel.items.length} electronic products`,
+                sku: orderToCancel.customer.fullName,
+                price: orderToCancel.total
+              }
+            : undefined
+        }
+        confirmButtonText="Confirm Cancellation"
+        isLoading={isCancelling}
+        onConfirm={confirmCancelOrder}
+        onClose={() => setOrderToCancel(null)}
+      />
     </div>
   );
 };

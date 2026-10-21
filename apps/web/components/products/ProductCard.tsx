@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Star, ShoppingCart, Check } from 'lucide-react';
+import { Star, ShoppingCart, Check, Eye } from 'lucide-react';
 import { Product } from '../../../../packages/shared/src/types/index';
 import { useCart } from '../../context/CartContext';
+import { ProductQuickViewModal } from './ProductQuickViewModal';
 
 interface ProductCardProps {
   product: Product;
@@ -12,6 +13,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, items } = useCart();
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const isInCart = items.some(i => i.product.id === product.id);
 
   return (
@@ -55,6 +57,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
+
+        {/* Quick View Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsQuickViewOpen(true);
+          }}
+          className="absolute bottom-2 right-2 z-10 p-1.5 sm:p-2 rounded-xl bg-white/95 dark:bg-slate-800/95 text-slate-700 dark:text-slate-200 backdrop-blur-xs shadow-md transition-all hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white cursor-pointer active:scale-95"
+          title="Quick View Product"
+          aria-label="Quick View Product"
+        >
+          <Eye size={14} className="sm:w-4 sm:h-4" />
+        </button>
       </div>
 
       {/* Content Body */}
@@ -146,6 +163,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </button>
         </div>
       </div>
+
+      {/* Quick View Modal */}
+      <ProductQuickViewModal
+        product={product}
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+      />
     </div>
   );
 };

@@ -14,6 +14,8 @@ import {
   Check 
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { ConfirmModal } from '../../components/common/ConfirmModal';
+import { Product } from '../../../../packages/shared/src/types/index';
 
 export default function CartPage() {
   const router = useRouter();
@@ -22,6 +24,10 @@ export default function CartPage() {
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
   const [promoMessage, setPromoMessage] = useState('');
+
+  // Delete Confirmation Modals State
+  const [itemToRemove, setItemToRemove] = useState<Product | null>(null);
+  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);
 
   const shippingFee = subtotal > 100 || subtotal === 0 ? 0 : 15;
   const discountAmount = Math.round((subtotal * discountPercent) / 100);
@@ -76,7 +82,7 @@ export default function CartPage() {
           </p>
         </div>
         <button
-          onClick={clearCart}
+          onClick={() => setIsClearCartModalOpen(true)}
           className="text-xs font-bold text-red-500 hover:text-red-700 cursor-pointer"
         >
           Clear All
@@ -161,7 +167,7 @@ export default function CartPage() {
 
                 <button
                   type="button"
-                  onClick={() => removeFromCart(product.id)}
+                  onClick={() => setItemToRemove(product)}
                   className="p-1.5 text-red-500 hover:text-red-700 cursor-pointer"
                   title="Remove item"
                 >
@@ -283,6 +289,71 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Checkout Bar */}
+      <div
+        className="md:hidden fixed bottom-16 left-0 right-0 z-30 border-t p-3 backdrop-blur-md flex items-center justify-between gap-3 shadow-lg"
+        style={{
+          backgroundColor: 'var(--surface)',
+          borderColor: 'var(--border)'
+        }}
+      >
+        <div>
+          <span className="text-[10px] font-semibold" style={{ color: 'var(--foreground-muted)' }}>Total:</span>
+          <div className="text-base font-black" style={{ color: 'var(--primary)' }}>
+            ${grandTotal.toLocaleString()}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push('/checkout')}
+          className="flex-1 max-w-[200px] py-2.5 px-4 rounded-xl text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+          style={{ backgroundColor: 'var(--primary)' }}
+        >
+          <span>Checkout</span>
+          <ArrowRight size={14} />
+        </button>
+      </div>
+
+      {/* Remove Item Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(itemToRemove)}
+        title="Remove Item from Cart?"
+        message={`Are you sure you want to remove "${itemToRemove?.name}" from your shopping cart?`}
+        itemPreview={
+          itemToRemove
+            ? {
+                title: itemToRemove.name,
+                subtitle: `SKU: ${itemToRemove.sku} • $${itemToRemove.price.toLocaleString()}`,
+                imageUrl: itemToRemove.imageUrl,
+                badge: itemToRemove.brand
+              }
+            : undefined
+        }
+        confirmText="Remove Item"
+        variant="danger"
+        onConfirm={() => {
+          if (itemToRemove) {
+            removeFromCart(itemToRemove.id);
+            setItemToRemove(null);
+          }
+        }}
+        onClose={() => setItemToRemove(null)}
+      />
+
+      {/* Clear Cart Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isClearCartModalOpen}
+        title="Clear Entire Shopping Cart?"
+        message="Are you sure you want to remove all electronics from your shopping cart? This action cannot be reversed."
+        confirmText="Clear Entire Cart"
+        variant="danger"
+        onConfirm={() => {
+          clearCart();
+          setIsClearCartModalOpen(false);
+        }}
+        onClose={() => setIsClearCartModalOpen(false)}
+      />
     </div>
   );
 }

@@ -14,12 +14,15 @@ import {
   Cpu, 
   Zap,
   PhoneCall,
-  Share2
+  Share2,
+  ZoomIn
 } from 'lucide-react';
 import { Product } from '../../../../../packages/shared/src/types/index';
 import { SEED_PRODUCTS } from '../../../../../packages/shared/src/data/seed-products';
 import { useCart } from '../../../context/CartContext';
 import { ProductCard } from '../../../components/products/ProductCard';
+import { ProductImageLightboxModal } from '../../../components/products/ProductImageLightboxModal';
+import { ShareModal } from '../../../components/products/ShareModal';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -29,6 +32,8 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addedNotice, setAddedNotice] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const productId = params.id as string;
 
@@ -116,11 +121,13 @@ export default function ProductDetailPage() {
         {/* Left: Product Image Showcase */}
         <div className="flex flex-col gap-3 sm:gap-4">
           <div
-            className="rounded-2xl sm:rounded-3xl border p-4 sm:p-8 flex items-center justify-center aspect-square overflow-hidden relative"
+            className="rounded-2xl sm:rounded-3xl border p-4 sm:p-8 flex items-center justify-center aspect-square overflow-hidden relative cursor-zoom-in group"
             style={{
               backgroundColor: 'var(--surface)',
               borderColor: 'var(--border)'
             }}
+            onClick={() => setIsLightboxOpen(true)}
+            title="Click to view full image in high resolution"
           >
             {product.discountPercentage && product.discountPercentage > 0 ? (
               <span
@@ -134,8 +141,14 @@ export default function ProductDetailPage() {
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="max-h-full max-w-full object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
+              className="max-h-full max-w-full object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
             />
+
+            {/* Click to Zoom Pill */}
+            <div className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-xl bg-black/60 text-white text-[11px] font-bold backdrop-blur-xs opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 pointer-events-none">
+              <ZoomIn size={13} />
+              <span>Tap to Zoom</span>
+            </div>
           </div>
 
           {/* Value Badges Strip under Image */}
@@ -167,16 +180,28 @@ export default function ProductDetailPage() {
         {/* Right: Product Buy Info & Specs */}
         <div className="flex flex-col gap-5 sm:gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span
-                className="text-[11px] sm:text-xs font-black uppercase px-2 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--surface-elevated)', color: 'var(--primary)' }}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[11px] sm:text-xs font-black uppercase px-2 py-0.5 rounded"
+                  style={{ backgroundColor: 'var(--surface-elevated)', color: 'var(--primary)' }}
+                >
+                  {product.brand}
+                </span>
+                <span className="text-[11px] sm:text-xs font-mono" style={{ color: 'var(--foreground-subtle)' }}>
+                  SKU: {product.sku}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsShareOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                title="Share this product"
               >
-                {product.brand}
-              </span>
-              <span className="text-[11px] sm:text-xs font-mono" style={{ color: 'var(--foreground-subtle)' }}>
-                SKU: {product.sku}
-              </span>
+                <Share2 size={13} />
+                <span>Share</span>
+              </button>
             </div>
 
             <h1 className="text-xl sm:text-3xl font-black tracking-tight leading-snug" style={{ color: 'var(--foreground)' }}>
@@ -446,6 +471,24 @@ export default function ProductDetailPage() {
           </button>
         </div>
       </div>
+
+      {/* Lightbox Zoom Modal */}
+      <ProductImageLightboxModal
+        isOpen={isLightboxOpen}
+        imageUrl={product.imageUrl}
+        altText={product.name}
+        productName={product.name}
+        onClose={() => setIsLightboxOpen(false)}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareOpen}
+        title={product.name}
+        url={typeof window !== 'undefined' ? window.location.href : `https://umerelectronics.com/products/${product.id}`}
+        imageUrl={product.imageUrl}
+        onClose={() => setIsShareOpen(false)}
+      />
     </div>
   );
 }

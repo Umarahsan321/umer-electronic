@@ -8,10 +8,13 @@ import {
   Check, 
   AlertCircle,
   Filter,
+  Eye,
   Image as ImageIcon
 } from 'lucide-react';
 import { Product } from '../../../../packages/shared/src/types/index';
 import { SEED_PRODUCTS } from '../../../../packages/shared/src/data/seed-products';
+import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
+import { ProductViewModal } from '../components/ProductViewModal';
 
 export const ProductsManager: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -22,6 +25,11 @@ export const ProductsManager: React.FC = () => {
   // Modal State for Add / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Modal State for View & Delete
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
 
   // Form State
   const [formName, setFormName] = useState('');
@@ -153,15 +161,17 @@ export const ProductsManager: React.FC = () => {
     }
   };
 
-  const handleDeleteProduct = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete "${name}" from inventory?`)) return;
-
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+    setIsDeletingProduct(true);
     try {
-      await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:5000/api/products/${productToDelete.id}`, { method: 'DELETE' });
     } catch (err) {
       console.warn('Backend delete failed, removing locally:', err);
     }
-    setProducts(prev => prev.filter(p => p.id !== id));
+    setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
+    setIsDeletingProduct(false);
+    setProductToDelete(null);
   };
 
   const filteredProducts = products.filter(p => {
@@ -260,8 +270,8 @@ export const ProductsManager: React.FC = () => {
         </button>
       </div>
 
-      {/* Inventory Table */}
-      <div style={{
+      {/* Inventory Table (Desktop View >= 769px) */}
+      <div className="admin-desktop-table" style={{
         backgroundColor: 'var(--bg-surface)',
         border: '1px solid var(--border-color)',
         borderRadius: '12px',
@@ -291,9 +301,10 @@ export const ProductsManager: React.FC = () => {
                           width: '44px',
                           height: '44px',
                           borderRadius: '6px',
-                          objectFit: 'cover',
-                          backgroundColor: 'var(--bg-elevated)',
-                          border: '1px solid var(--border-color)'
+                          objectFit: 'contain',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid var(--border-color)',
+                          padding: '2px'
                         }}
                       />
                       <div>
@@ -327,6 +338,19 @@ export const ProductsManager: React.FC = () => {
                     <td style={{ padding: '14px 16px', textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '8px' }}>
                         <button
+                          onClick={() => setViewingProduct(product)}
+                          title="View Product Details"
+                          style={{
+                            padding: '6px',
+                            backgroundColor: 'var(--bg-elevated)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '6px',
+                            color: 'var(--text-primary)'
+                          }}
+                        >
+                          <Eye size={15} />
+                        </button>
+                        <button
                           onClick={() => openEditModal(product)}
                           title="Edit Product"
                           style={{
@@ -340,7 +364,7 @@ export const ProductsManager: React.FC = () => {
                           <Edit3 size={15} />
                         </button>
                         <button
-                          onClick={() => handleDeleteProduct(product.id, product.name)}
+                          onClick={() => setProductToDelete(product)}
                           title="Delete Product"
                           style={{
                             padding: '6px',
@@ -366,6 +390,124 @@ export const ProductsManager: React.FC = () => {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Card Stack View (< 768px) */}
+      <div className="admin-mobile-cards">
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map(product => (
+            <div
+              key={product.id}
+              style={{
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                padding: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+              }}
+            >
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '8px',
+                    objectFit: 'contain',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid var(--border-color)',
+                    padding: '2px',
+                    flexShrink: 0
+                  }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase' }}>
+                    {product.brand}
+                  </div>
+                  <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', margin: '2px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {product.name}
+                  </h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem' }}>
+                    <span style={{ color: 'var(--text-muted)', fontFamily: 'monospace' }}>{product.sku}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>•</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>{product.category}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
+                <div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)' }}>
+                    ${product.price.toLocaleString()}
+                  </div>
+                  <span style={{
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    backgroundColor: product.stock > 10 ? 'var(--success-light)' : product.stock > 0 ? 'var(--warning-light)' : 'var(--danger-light)',
+                    color: product.stock > 10 ? 'var(--success)' : product.stock > 0 ? 'var(--warning)' : 'var(--danger)'
+                  }}>
+                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of Stock'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => setViewingProduct(product)}
+                    title="View Product"
+                    style={{
+                      padding: '8px 10px',
+                      backgroundColor: 'var(--bg-elevated)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={() => openEditModal(product)}
+                    title="Edit Product"
+                    style={{
+                      padding: '8px 10px',
+                      backgroundColor: 'var(--bg-elevated)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      color: 'var(--primary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    onClick={() => setProductToDelete(product)}
+                    title="Delete Product"
+                    style={{
+                      padding: '8px 10px',
+                      backgroundColor: 'var(--danger-light)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      color: 'var(--danger)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-surface)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            No products found matching filters.
+          </div>
+        )}
       </div>
 
       {/* Add / Edit Product Modal */}
@@ -619,6 +761,39 @@ export const ProductsManager: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Product View Details Modal */}
+      <ProductViewModal
+        product={viewingProduct}
+        isOpen={Boolean(viewingProduct)}
+        onClose={() => setViewingProduct(null)}
+        onEdit={(prod) => {
+          setViewingProduct(null);
+          openEditModal(prod);
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={Boolean(productToDelete)}
+        title="Delete Electronic Product"
+        message={`Are you sure you want to delete "${productToDelete?.name}" from store inventory? This will permanently erase this product catalog entry.`}
+        itemDetails={
+          productToDelete
+            ? {
+                name: productToDelete.name,
+                sku: productToDelete.sku,
+                price: productToDelete.price,
+                imageUrl: productToDelete.imageUrl,
+                type: productToDelete.category
+              }
+            : undefined
+        }
+        confirmButtonText="Delete Permanently"
+        isLoading={isDeletingProduct}
+        onConfirm={confirmDeleteProduct}
+        onClose={() => setProductToDelete(null)}
+      />
     </div>
   );
 };

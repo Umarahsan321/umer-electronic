@@ -1,12 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { ConfirmModal } from '../common/ConfirmModal';
+import { Product } from '../../../../packages/shared/src/types/index';
 
 export const CartDrawer: React.FC = () => {
   const { items, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, subtotal, itemCount } = useCart();
+  const [itemToRemove, setItemToRemove] = useState<Product | null>(null);
 
   if (!isCartOpen) return null;
 
@@ -97,8 +100,8 @@ export const CartDrawer: React.FC = () => {
 
                 <div className="flex flex-col items-end gap-2">
                   <button
-                    onClick={() => removeFromCart(product.id)}
-                    className="p-1 text-red-500 hover:text-red-700"
+                    onClick={() => setItemToRemove(product)}
+                    className="p-1 text-red-500 hover:text-red-700 cursor-pointer"
                     title="Remove item"
                   >
                     <Trash2 size={16} />
@@ -170,6 +173,32 @@ export const CartDrawer: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Remove Item Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(itemToRemove)}
+        title="Remove Item from Cart?"
+        message={`Are you sure you want to remove "${itemToRemove?.name}" from your cart?`}
+        itemPreview={
+          itemToRemove
+            ? {
+                title: itemToRemove.name,
+                subtitle: `SKU: ${itemToRemove.sku} • $${itemToRemove.price.toLocaleString()}`,
+                imageUrl: itemToRemove.imageUrl,
+                badge: itemToRemove.brand
+              }
+            : undefined
+        }
+        confirmText="Remove Item"
+        variant="danger"
+        onConfirm={() => {
+          if (itemToRemove) {
+            removeFromCart(itemToRemove.id);
+            setItemToRemove(null);
+          }
+        }}
+        onClose={() => setItemToRemove(null)}
+      />
     </div>
   );
 };

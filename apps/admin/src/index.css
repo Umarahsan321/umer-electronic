@@ -75,6 +75,25 @@ input, select, textarea {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Responsive Table & Card Views */
+.admin-desktop-table {
+  display: block;
+}
+.admin-mobile-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .admin-desktop-table {
+    display: none !important;
+  }
+  .admin-mobile-cards {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
 /* Responsive helper classes */
 @media (max-width: 1024px) {
   .admin-sidebar-desktop {
@@ -93,3 +112,4 @@ input, select, textarea {
     display: none !important;
   }
 }
+

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { PaymentMethod } from '../../../../packages/shared/src/types/index';
+import { OrderReviewModal } from '../../components/checkout/OrderReviewModal';
 
 const PAKISTANI_CITIES = [
   'Islamabad',
@@ -49,6 +50,7 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const shippingFee = subtotal > 100 || subtotal === 0 ? 0 : 15;
   const tax = Math.round(subtotal * 0.05);
@@ -74,10 +76,13 @@ export default function CheckoutPage() {
     );
   }
 
-  const handlePlaceOrder = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !phone || !address) return;
+    setIsReviewModalOpen(true);
+  };
 
+  const executeOrderPlacement = async () => {
     setIsSubmitting(true);
 
     const finalCity = city === 'Other City' && customCity ? customCity : city;
@@ -118,6 +123,7 @@ export default function CheckoutPage() {
       const data = await res.json();
 
       if (data.success && data.data) {
+        setIsReviewModalOpen(false);
         clearCart();
         router.push(`/order-success?orderId=${data.data.orderNumber}`);
       } else {
@@ -127,6 +133,7 @@ export default function CheckoutPage() {
       console.warn('Backend order submission fallback:', err);
       // Fallback offline mock order number
       const mockOrderNumber = `UE-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      setIsReviewModalOpen(false);
       clearCart();
       router.push(`/order-success?orderId=${mockOrderNumber}`);
     } finally {
@@ -145,7 +152,7 @@ export default function CheckoutPage() {
         </p>
       </div>
 
-      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10 items-start">
+      <form onSubmit={handleFormSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10 items-start">
         {/* Left Columns: Forms */}
         <div className="lg:col-span-2 flex flex-col gap-6 sm:gap-8">
           {/* 1. Customer Information */}
@@ -477,6 +484,28 @@ export default function CheckoutPage() {
           </div>
         </div>
       </form>
+
+      {/* Order Review & Confirmation Modal */}
+      <OrderReviewModal
+        isOpen={isReviewModalOpen}
+        customer={{
+          fullName,
+          phone,
+          email,
+          address,
+          city: city === 'Other City' && customCity ? customCity : city,
+          postalCode
+        }}
+        items={items}
+        paymentMethod={paymentMethod}
+        subtotal={subtotal}
+        shippingFee={shippingFee}
+        tax={tax}
+        total={total}
+        isSubmitting={isSubmitting}
+        onConfirm={executeOrderPlacement}
+        onClose={() => setIsReviewModalOpen(false)}
+      />
     </div>
   );
 }
