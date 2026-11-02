@@ -107,9 +107,18 @@ function OrderSuccessContent() {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
         <Link
-          href="/products"
-          className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center justify-center gap-2"
+          href={`/track-order?orderNumber=${encodeURIComponent(orderId)}`}
+          className="w-full sm:w-auto px-6 py-3 rounded-xl font-black text-xs sm:text-sm text-white flex items-center justify-center gap-2 shadow-sm"
           style={{ backgroundColor: 'var(--primary)' }}
+        >
+          <Truck size={16} />
+          <span>Track Live Progress</span>
+        </Link>
+
+        <Link
+          href="/products"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs sm:text-sm border flex items-center justify-center gap-2"
+          style={{ backgroundColor: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
         >
           <span>Continue Shopping</span>
           <ArrowRight size={15} />
@@ -123,17 +132,8 @@ function OrderSuccessContent() {
           style={{ backgroundColor: '#25D366' }}
         >
           <MessageCircle size={15} />
-          <span>Track via WhatsApp</span>
+          <span>WhatsApp Desk</span>
         </a>
-
-        <Link
-          href="/contact"
-          className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs sm:text-sm border flex items-center justify-center gap-2"
-          style={{ backgroundColor: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-        >
-          <PhoneCall size={15} />
-          <span>Contact Us</span>
-        </Link>
       </div>
     </div>
   );

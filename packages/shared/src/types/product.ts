@@ -2,6 +2,17 @@ export interface ProductSpecs {
   [key: string]: string;
 }
 
+export interface ProductReview {
+  id: string;
+  productId: string;
+  userName: string;
+  rating: number;
+  title: string;
+  comment: string;
+  verifiedPurchase: boolean;
+  createdAt: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -25,6 +36,7 @@ export interface Product {
   imageUrl: string;
   features: string[];
   specs: ProductSpecs;
+  reviews?: ProductReview[];
   createdAt: string;
   updatedAt?: string;
 }

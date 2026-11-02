@@ -14,6 +14,21 @@ router.get('/', (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/orders/track/:orderNumber (Customer order tracking)
+router.get('/track/:orderNumber', (req: Request, res: Response) => {
+  try {
+    const { orderNumber } = req.params;
+    const phone = req.query.phone as string | undefined;
+    const tracked = db.trackOrder(orderNumber, phone);
+    if (!tracked) {
+      return res.status(404).json({ success: false, message: 'Order reference number not found' });
+    }
+    res.json({ success: true, data: tracked });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to track order', error });
+  }
+});
+
 // GET /api/orders/:id
 router.get('/:id', (req: Request, res: Response) => {
   try {

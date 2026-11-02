@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { Product } from '../../../../packages/shared/src/types/index';
 
 export const CartDrawer: React.FC = () => {
   const { items, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, subtotal, itemCount } = useCart();
+  const { formatPrice } = useCurrency();
   const [itemToRemove, setItemToRemove] = useState<Product | null>(null);
 
   if (!isCartOpen) return null;
@@ -94,7 +96,7 @@ export const CartDrawer: React.FC = () => {
                     {product.brand}
                   </div>
                   <div className="text-sm font-extrabold mt-1" style={{ color: 'var(--primary)' }}>
-                    ${product.price.toLocaleString()}
+                    {formatPrice(product.price)}
                   </div>
                 </div>
 
@@ -141,7 +143,7 @@ export const CartDrawer: React.FC = () => {
             <div className="flex justify-between items-center text-sm">
               <span style={{ color: 'var(--foreground-muted)' }}>Subtotal</span>
               <span className="text-lg font-black" style={{ color: 'var(--foreground)' }}>
-                ${subtotal.toLocaleString()}
+                {formatPrice(subtotal)}
               </span>
             </div>
             <p className="text-xs" style={{ color: 'var(--foreground-subtle)' }}>

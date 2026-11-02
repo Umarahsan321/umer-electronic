@@ -58,6 +58,41 @@ router.get('/:id', (req: Request, res: Response) => {
   }
 });
 
+// GET /api/products/:id/reviews
+router.get('/:id/reviews', (req: Request, res: Response) => {
+  try {
+    const reviews = db.getProductReviews(req.params.id);
+    res.json({ success: true, data: reviews });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve reviews', error });
+  }
+});
+
+// POST /api/products/:id/reviews
+router.post('/:id/reviews', (req: Request, res: Response) => {
+  try {
+    const { userName, rating, title, comment } = req.body;
+    if (!userName || !rating || !title || !comment) {
+      return res.status(400).json({ success: false, message: 'All review fields are required' });
+    }
+
+    const review = db.addReview(req.params.id, {
+      userName,
+      rating: Number(rating),
+      title,
+      comment
+    });
+
+    if (!review) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.status(201).json({ success: true, data: review });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to post review', error });
+  }
+});
+
 // POST /api/products (Admin)
 router.post('/', (req: Request, res: Response) => {
   try {

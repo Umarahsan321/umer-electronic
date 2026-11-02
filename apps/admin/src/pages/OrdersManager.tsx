@@ -13,7 +13,8 @@ import {
   MapPin,
   Trash2,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  Printer
 } from 'lucide-react';
 import { Order, OrderStatus } from '../../../../packages/shared/src/types/index';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
@@ -522,12 +523,20 @@ export const OrdersManager: React.FC = () => {
                   <Phone size={14} /> {selectedOrder.customer.phone}
                 </a>
                 <a
-                  href={`https://wa.me/${selectedOrder.customer.phone.replace(/[^0-9]/g, '')}`}
+                  href={`https://wa.me/${selectedOrder.customer.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                    `Assalam-o-Alaikum ${selectedOrder.customer.fullName},\n\n` +
+                    `Thank you for ordering with Umer Electronics!\n` +
+                    `Your order *${selectedOrder.orderNumber}* has been verified by warehouse.\n` +
+                    `Total Payable: Rs. ${(selectedOrder.total * 280).toLocaleString()} (COD)\n` +
+                    `Delivery Address: ${selectedOrder.customer.address}, ${selectedOrder.customer.city}\n\n` +
+                    `Estimated nationwide arrival: 24 to 48 hours.`
+                  )}`}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#16a34a', textDecoration: 'none', fontWeight: 600 }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#16a34a', textDecoration: 'none', fontWeight: 700 }}
+                  title="Send pre-filled WhatsApp Dispatch notification"
                 >
-                  <MessageSquare size={14} /> WhatsApp
+                  <MessageSquare size={14} /> Send WhatsApp Invoice
                 </a>
                 <a
                   href={`mailto:${selectedOrder.customer.email}`}
@@ -639,21 +648,43 @@ export const OrdersManager: React.FC = () => {
                   </button>
                 )}
               </div>
-              <button
-                onClick={() => setSelectedOrder(null)}
-                style={{
-                  padding: '9px 20px',
-                  backgroundColor: 'var(--primary)',
-                  color: '#FFFFFF',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer'
-                }}
-              >
-                Close Receipt
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  style={{
+                    padding: '9px 16px',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Printer size={16} />
+                  <span>Print Slip</span>
+                </button>
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  style={{
+                    padding: '9px 20px',
+                    backgroundColor: 'var(--primary)',
+                    color: '#FFFFFF',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close Receipt
+                </button>
+              </div>
             </div>
           </div>
         </div>

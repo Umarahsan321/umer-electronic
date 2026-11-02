@@ -48,6 +48,8 @@ const requiredFiles = [
   'apps/web/app/cart/page.tsx',
   'apps/web/app/checkout/page.tsx',
   'apps/web/app/order-success/page.tsx',
+  'apps/web/app/track-order/page.tsx',
+  'apps/web/app/wishlist/page.tsx',
   'apps/web/app/contact/page.tsx',
   'apps/web/app/about/page.tsx',
   'apps/web/app/privacy-policy/page.tsx',
@@ -63,6 +65,8 @@ const requiredFiles = [
   'apps/web/components/products/FilterSidebar.tsx',
   'apps/web/context/ThemeContext.tsx',
   'apps/web/context/CartContext.tsx',
+  'apps/web/context/CurrencyContext.tsx',
+  'apps/web/context/WishlistContext.tsx',
   // Admin
   'apps/admin/package.json',
   'apps/admin/index.html',
@@ -71,13 +75,16 @@ const requiredFiles = [
   'apps/admin/src/index.css',
   'apps/admin/src/components/AdminSidebar.tsx',
   'apps/admin/src/components/AdminHeader.tsx',
+  'apps/admin/src/components/AdminLogin.tsx',
   'apps/admin/src/components/UmerLogo.tsx',
   'apps/admin/src/pages/Dashboard.tsx',
   'apps/admin/src/pages/ProductsManager.tsx',
   'apps/admin/src/pages/OrdersManager.tsx',
   'apps/admin/src/pages/CategoriesManager.tsx',
   'apps/admin/src/pages/Settings.tsx',
-  'apps/admin/src/context/AdminThemeContext.tsx'
+  'apps/admin/src/context/AdminThemeContext.tsx',
+  // Integration Tests
+  'scripts/api-integration-test.ts'
 ];
 
 requiredFiles.forEach(file => {

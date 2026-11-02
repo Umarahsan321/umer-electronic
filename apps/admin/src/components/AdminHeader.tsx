@@ -1,14 +1,15 @@
 import React from 'react';
-import { Sun, Moon, CheckCircle2, Menu } from 'lucide-react';
+import { Sun, Moon, CheckCircle2, Menu, LogOut } from 'lucide-react';
 import { useAdminTheme } from '../context/AdminThemeContext';
 
 interface HeaderProps {
   title: string;
   subtitle?: string;
   onToggleMobileSidebar: () => void;
+  onLogout?: () => void;
 }
 
-export const AdminHeader: React.FC<HeaderProps> = ({ title, subtitle, onToggleMobileSidebar }) => {
+export const AdminHeader: React.FC<HeaderProps> = ({ title, subtitle, onToggleMobileSidebar, onLogout }) => {
   const { theme, toggleTheme } = useAdminTheme();
 
   return (
@@ -143,6 +144,28 @@ export const AdminHeader: React.FC<HeaderProps> = ({ title, subtitle, onToggleMo
             Super Admin
           </div>
         </div>
+
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            title="Log Out of Admin Panel"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-elevated)',
+              color: '#EF4444',
+              cursor: 'pointer'
+            }}
+          >
+            <LogOut size={16} />
+          </button>
+        )}
       </div>
     </header>
   );

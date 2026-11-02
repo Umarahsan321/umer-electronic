@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Star, ShoppingCart, Check, Eye } from 'lucide-react';
+import { Star, ShoppingCart, Check, Eye, Heart } from 'lucide-react';
 import { Product } from '../../../../packages/shared/src/types/index';
 import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { ProductQuickViewModal } from './ProductQuickViewModal';
 
 interface ProductCardProps {
@@ -13,8 +15,11 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, items } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const isInCart = items.some(i => i.product.id === product.id);
+  const isWishlisted = isInWishlist(product.id);
 
   return (
     <div
@@ -58,20 +63,40 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           />
         </Link>
 
-        {/* Quick View Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsQuickViewOpen(true);
-          }}
-          className="absolute bottom-2 right-2 z-10 p-1.5 sm:p-2 rounded-xl bg-white/95 dark:bg-slate-800/95 text-slate-700 dark:text-slate-200 backdrop-blur-xs shadow-md transition-all hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white cursor-pointer active:scale-95"
-          title="Quick View Product"
-          aria-label="Quick View Product"
-        >
-          <Eye size={14} className="sm:w-4 sm:h-4" />
-        </button>
+        {/* Actions overlay buttons */}
+        <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleWishlist(product);
+            }}
+            className={`p-1.5 sm:p-2 rounded-xl backdrop-blur-xs shadow-md transition-all cursor-pointer active:scale-95 ${
+              isWishlisted
+                ? 'bg-rose-600 text-white'
+                : 'bg-white/95 dark:bg-slate-800/95 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400'
+            }`}
+            title={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+            aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+          >
+            <Heart size={14} fill={isWishlisted ? 'currentColor' : 'none'} className="sm:w-4 sm:h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsQuickViewOpen(true);
+            }}
+            className="p-1.5 sm:p-2 rounded-xl bg-white/95 dark:bg-slate-800/95 text-slate-700 dark:text-slate-200 backdrop-blur-xs shadow-md transition-all hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white cursor-pointer active:scale-95"
+            title="Quick View Product"
+            aria-label="Quick View Product"
+          >
+            <Eye size={14} className="sm:w-4 sm:h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Content Body */}
@@ -130,11 +155,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         >
           <div className="min-w-0">
             <div className="text-sm sm:text-base font-black truncate" style={{ color: 'var(--foreground)' }}>
-              ${product.price.toLocaleString()}
+              {formatPrice(product.price)}
             </div>
             {product.originalPrice && product.originalPrice > product.price ? (
               <div className="text-[10px] sm:text-xs line-through truncate" style={{ color: 'var(--foreground-muted)' }}>
-                ${product.originalPrice.toLocaleString()}
+                {formatPrice(product.originalPrice)}
               </div>
             ) : null}
           </div>

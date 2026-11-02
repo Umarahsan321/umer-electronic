@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '../context/ThemeContext';
+import { CurrencyProvider } from '../context/CurrencyContext';
+import { WishlistProvider } from '../context/WishlistContext';
 import { CartProvider } from '../context/CartContext';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
@@ -33,16 +35,20 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased min-h-screen flex flex-col pb-16 md:pb-0">
         <ThemeProvider>
-          <CartProvider>
-            <Navbar />
-            <CartDrawer />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <MobileBottomNav />
-            <FloatingWhatsApp />
-          </CartProvider>
+          <CurrencyProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <Navbar />
+                <CartDrawer />
+                <main className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+                <MobileBottomNav />
+                <FloatingWhatsApp />
+              </CartProvider>
+            </WishlistProvider>
+          </CurrencyProvider>
         </ThemeProvider>
       </body>
     </html>

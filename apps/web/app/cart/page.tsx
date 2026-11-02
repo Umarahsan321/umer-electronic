@@ -14,12 +14,14 @@ import {
   Check 
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { ConfirmModal } from '../../components/common/ConfirmModal';
 import { Product } from '../../../../packages/shared/src/types/index';
 
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeFromCart, clearCart, subtotal, itemCount } = useCart();
+  const { formatPrice } = useCurrency();
 
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -127,7 +129,7 @@ export default function CartPage() {
                     {product.sku}
                   </div>
                   <div className="text-xs sm:text-sm font-black mt-1" style={{ color: 'var(--primary)' }}>
-                    ${product.price.toLocaleString()} each
+                    {formatPrice(product.price)} each
                   </div>
                 </div>
               </div>
@@ -161,7 +163,7 @@ export default function CartPage() {
 
                 <div className="text-right">
                   <div className="text-sm sm:text-base font-black" style={{ color: 'var(--foreground)' }}>
-                    ${(product.price * quantity).toLocaleString()}
+                    {formatPrice(product.price * quantity)}
                   </div>
                 </div>
 
@@ -238,13 +240,13 @@ export default function CartPage() {
           <div className="flex flex-col gap-2.5 text-xs sm:text-sm border-t pt-4" style={{ borderColor: 'var(--border)' }}>
             <div className="flex justify-between" style={{ color: 'var(--foreground-muted)' }}>
               <span>Subtotal ({itemCount} items)</span>
-              <span className="font-bold" style={{ color: 'var(--foreground)' }}>${subtotal.toLocaleString()}</span>
+              <span className="font-bold" style={{ color: 'var(--foreground)' }}>{formatPrice(subtotal)}</span>
             </div>
 
             {discountAmount > 0 && (
               <div className="flex justify-between text-green-600 font-semibold">
                 <span>Discount (10%)</span>
-                <span>-${discountAmount.toLocaleString()}</span>
+                <span>-{formatPrice(discountAmount)}</span>
               </div>
             )}
 
@@ -254,14 +256,14 @@ export default function CartPage() {
                 {shippingFee === 0 ? (
                   <span className="text-green-600 font-bold uppercase text-[11px]">FREE</span>
                 ) : (
-                  `$${shippingFee}`
+                  formatPrice(shippingFee)
                 )}
               </span>
             </div>
 
             <div className="flex justify-between" style={{ color: 'var(--foreground-muted)' }}>
               <span>Estimated Tax (5%)</span>
-              <span>${tax.toLocaleString()}</span>
+              <span>{formatPrice(tax)}</span>
             </div>
 
             <div
@@ -269,7 +271,7 @@ export default function CartPage() {
               style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
             >
               <span>Total</span>
-              <span style={{ color: 'var(--primary)' }}>${grandTotal.toLocaleString()}</span>
+              <span style={{ color: 'var(--primary)' }}>{formatPrice(grandTotal)}</span>
             </div>
           </div>
 
@@ -301,7 +303,7 @@ export default function CartPage() {
         <div>
           <span className="text-[10px] font-semibold" style={{ color: 'var(--foreground-muted)' }}>Total:</span>
           <div className="text-base font-black" style={{ color: 'var(--primary)' }}>
-            ${grandTotal.toLocaleString()}
+            {formatPrice(grandTotal)}
           </div>
         </div>
         <button
@@ -324,7 +326,7 @@ export default function CartPage() {
           itemToRemove
             ? {
                 title: itemToRemove.name,
-                subtitle: `SKU: ${itemToRemove.sku} • $${itemToRemove.price.toLocaleString()}`,
+                subtitle: `SKU: ${itemToRemove.sku} • ${formatPrice(itemToRemove.price)}`,
                 imageUrl: itemToRemove.imageUrl,
                 badge: itemToRemove.brand
               }

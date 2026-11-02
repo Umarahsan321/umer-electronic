@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Product } from '../../../../packages/shared/src/types/index';
 import { useCart } from '../../context/CartContext';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface ProductQuickViewModalProps {
   product: Product | null;
@@ -29,6 +30,7 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
   onClose
 }) => {
   const { addToCart, items } = useCart();
+  const { formatPrice } = useCurrency();
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -164,11 +166,11 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
               {/* Pricing */}
               <div className="flex items-baseline gap-2.5 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                 <span className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--primary)' }}>
-                  ${product.price.toLocaleString()}
+                  {formatPrice(product.price)}
                 </span>
                 {product.originalPrice && product.originalPrice > product.price ? (
                   <span className="text-sm sm:text-base line-through text-slate-400 font-medium">
-                    ${product.originalPrice.toLocaleString()}
+                    {formatPrice(product.originalPrice)}
                   </span>
                 ) : null}
               </div>

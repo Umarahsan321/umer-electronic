@@ -10,9 +10,9 @@
       "price": 3499,
       "originalPrice": 3799,
       "discountPercentage": 8,
-      "rating": 4.9,
-      "reviewCount": 184,
-      "stock": 15,
+      "rating": 5,
+      "reviewCount": 186,
+      "stock": 13,
       "inStock": true,
       "featured": true,
       "isHotDeal": false,
@@ -39,7 +39,49 @@
         "OS": "macOS Sonoma / Sequoia",
         "Ports": "3x Thunderbolt 4, HDMI, SDXC, MagSafe 3"
       },
-      "createdAt": "2026-01-10T10:00:00Z"
+      "createdAt": "2026-01-10T10:00:00Z",
+      "reviews": [
+        {
+          "id": "rev-1793612635000",
+          "productId": "prod-lap-01",
+          "userName": "Khurram Shehzad (Rawalpindi)",
+          "rating": 5,
+          "title": "Flawless M3 Max Performance",
+          "comment": "Authentic sealed packaging with official local warranty check. Arrived safely in 24 hours.",
+          "verifiedPurchase": true,
+          "createdAt": "2026-11-02T09:43:55.000Z"
+        },
+        {
+          "id": "rev-1793612504497",
+          "productId": "prod-lap-01",
+          "userName": "Khurram Shehzad (Rawalpindi)",
+          "rating": 5,
+          "title": "Flawless M3 Max Performance",
+          "comment": "Authentic sealed packaging with official local warranty check. Arrived safely in 24 hours.",
+          "verifiedPurchase": true,
+          "createdAt": "2026-11-02T09:41:44.497Z"
+        },
+        {
+          "id": "rev-prod-lap-01-1",
+          "productId": "prod-lap-01",
+          "userName": "Muhammad Zeeshan",
+          "rating": 5,
+          "title": "100% Original and Sealed Unit",
+          "comment": "Verified with official serial check. Delivery was fast to Islamabad. Highly recommended!",
+          "verifiedPurchase": true,
+          "createdAt": "2026-10-29T09:41:44.494Z"
+        },
+        {
+          "id": "rev-prod-lap-01-2",
+          "productId": "prod-lap-01",
+          "userName": "Hamza Khan",
+          "rating": 5,
+          "title": "Premium build quality & excellent support",
+          "comment": "Outstanding performance. Box came in perfect packaging with warranty card properly stamped.",
+          "verifiedPurchase": true,
+          "createdAt": "2026-10-23T09:41:44.494Z"
+        }
+      ]
     },
     {
       "id": "prod-lap-02",
@@ -1074,6 +1116,74 @@
     }
   ],
   "orders": [
+    {
+      "customer": {
+        "fullName": "Ahmad Raza",
+        "email": "ahmad.raza@gmail.com",
+        "phone": "+92 312 3456789",
+        "address": "House 88, Street 15, Sector F-10/2",
+        "city": "Islamabad",
+        "postalCode": "44000",
+        "notes": "Call on arrival"
+      },
+      "items": [
+        {
+          "productId": "prod-lap-01",
+          "name": "Apple MacBook Pro 16\"",
+          "brand": "Apple",
+          "price": 3499,
+          "quantity": 1,
+          "imageUrl": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8",
+          "sku": "APL-MBP16-M3M-36G"
+        }
+      ],
+      "subtotal": 3499,
+      "shippingFee": 0,
+      "tax": 175,
+      "discount": 0,
+      "total": 3674,
+      "paymentMethod": "cod",
+      "paymentStatus": "pending",
+      "orderStatus": "pending",
+      "id": "ord-1793612635003",
+      "orderNumber": "UE-2026-1005",
+      "createdAt": "2026-11-02T09:43:55.003Z",
+      "updatedAt": "2026-11-02T09:43:55.003Z"
+    },
+    {
+      "customer": {
+        "fullName": "Ahmad Raza",
+        "email": "ahmad.raza@gmail.com",
+        "phone": "+92 312 3456789",
+        "address": "House 88, Street 15, Sector F-10/2",
+        "city": "Islamabad",
+        "postalCode": "44000",
+        "notes": "Call on arrival"
+      },
+      "items": [
+        {
+          "productId": "prod-lap-01",
+          "name": "Apple MacBook Pro 16\"",
+          "brand": "Apple",
+          "price": 3499,
+          "quantity": 1,
+          "imageUrl": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8",
+          "sku": "APL-MBP16-M3M-36G"
+        }
+      ],
+      "subtotal": 3499,
+      "shippingFee": 0,
+      "tax": 175,
+      "discount": 0,
+      "total": 3674,
+      "paymentMethod": "cod",
+      "paymentStatus": "pending",
+      "orderStatus": "pending",
+      "id": "ord-1793612504499",
+      "orderNumber": "UE-2026-1004",
+      "createdAt": "2026-11-02T09:41:44.499Z",
+      "updatedAt": "2026-11-02T09:41:44.499Z"
+    },
     {
       "id": "ord-1001",
       "orderNumber": "UE-2026-1001",

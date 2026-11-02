@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { X, ShieldCheck, Truck, CheckCircle2, AlertCircle } from 'lucide-react';
 import { PaymentMethod } from '../../../../packages/shared/src/types/index';
 import { CartItem } from '../../context/CartContext';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface OrderReviewModalProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export const OrderReviewModal: React.FC<OrderReviewModalProps> = ({
   onConfirm,
   onClose
 }) => {
+  const { formatPrice } = useCurrency();
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -155,11 +157,11 @@ export const OrderReviewModal: React.FC<OrderReviewModalProps> = ({
                     />
                     <div className="min-w-0">
                       <div className="font-bold truncate max-w-[200px]">{product.name}</div>
-                      <div className="text-[10px] text-slate-400">Qty: {quantity} × ${product.price.toLocaleString()}</div>
+                      <div className="text-[10px] text-slate-400">Qty: {quantity} &times; {formatPrice(product.price)}</div>
                     </div>
                   </div>
                   <div className="font-black shrink-0 ml-2">
-                    ${(product.price * quantity).toLocaleString()}
+                    {formatPrice(product.price * quantity)}
                   </div>
                 </div>
               ))}
@@ -173,19 +175,19 @@ export const OrderReviewModal: React.FC<OrderReviewModalProps> = ({
           >
             <div className="flex justify-between">
               <span className="text-slate-500">Subtotal</span>
-              <span className="font-bold">${subtotal.toLocaleString()}</span>
+              <span className="font-bold">{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Delivery Fee</span>
-              <span className="font-bold">{shippingFee === 0 ? 'FREE' : `$${shippingFee}`}</span>
+              <span className="font-bold">{shippingFee === 0 ? 'FREE' : formatPrice(shippingFee)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Estimated Sales Tax</span>
-              <span className="font-bold">${tax.toLocaleString()}</span>
+              <span className="font-bold">{formatPrice(tax)}</span>
             </div>
             <div className="flex justify-between pt-2 border-t font-black text-sm" style={{ borderColor: 'var(--border)' }}>
               <span>Grand Total</span>
-              <span style={{ color: 'var(--primary)' }}>${total.toLocaleString()}</span>
+              <span style={{ color: 'var(--primary)' }}>{formatPrice(total)}</span>
             </div>
           </div>
         </div>

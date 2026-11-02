@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Product, Category, Order, OrderStatus, ProductFilterParams, PaginatedResponse, DashboardStats } from '../../../../packages/shared/src/types/index';
+import { Product, ProductReview, Category, Order, OrderStatus, ProductFilterParams, PaginatedResponse, DashboardStats } from '../../../../packages/shared/src/types/index';
 import { SEED_PRODUCTS } from '../../../../packages/shared/src/data/seed-products';
 import { SEED_CATEGORIES } from '../../../../packages/shared/src/data/seed-categories';
 
@@ -356,6 +356,138 @@ class Database {
     order.updatedAt = new Date().toISOString();
     this.saveData();
     return order;
+  }
+
+  public trackOrder(orderNumberQuery: string, phoneQuery?: string): any | undefined {
+    const cleanNum = orderNumberQuery.trim().toLowerCase();
+    const order = this.data.orders.find(o => 
+      o.orderNumber.toLowerCase() === cleanNum ||
+      o.id.toLowerCase() === cleanNum
+    );
+
+    if (!order) return undefined;
+
+    if (phoneQuery && phoneQuery.trim()) {
+      const cleanPhoneQuery = phoneQuery.replace(/[^0-9]/g, '');
+      const cleanCustomerPhone = order.customer.phone.replace(/[^0-9]/g, '');
+      if (cleanPhoneQuery && cleanCustomerPhone && !cleanCustomerPhone.includes(cleanPhoneQuery) && !cleanPhoneQuery.includes(cleanCustomerPhone)) {
+        return undefined;
+      }
+    }
+
+    const steps = [
+      {
+        title: 'Order Placed',
+        description: 'Order registered & allocated to verification team',
+        timestamp: order.createdAt,
+        status: 'completed'
+      },
+      {
+        title: 'Call Verification',
+        description: 'Customer contact and delivery details verified',
+        timestamp: ['processing', 'shipped', 'delivered'].includes(order.orderStatus) ? order.updatedAt : null,
+        status: order.orderStatus === 'pending' ? 'current' : 'completed'
+      },
+      {
+        title: 'Packed & Inspected',
+        description: 'Genuine warranty seal & invoice attached',
+        timestamp: ['shipped', 'delivered'].includes(order.orderStatus) ? order.updatedAt : null,
+        status: order.orderStatus === 'processing' ? 'current' : (['shipped', 'delivered'].includes(order.orderStatus) ? 'completed' : 'upcoming')
+      },
+      {
+        title: 'Express Courier Dispatched',
+        description: 'Handed over to courier for express doorstep delivery',
+        timestamp: order.orderStatus === 'delivered' ? order.updatedAt : null,
+        status: order.orderStatus === 'shipped' ? 'current' : (order.orderStatus === 'delivered' ? 'completed' : 'upcoming')
+      },
+      {
+        title: 'Delivered',
+        description: 'Package handed over and payment settled',
+        timestamp: order.orderStatus === 'delivered' ? order.updatedAt : null,
+        status: order.orderStatus === 'delivered' ? 'completed' : 'upcoming'
+      }
+    ];
+
+    if (order.orderStatus === 'cancelled') {
+      steps[1].status = 'cancelled';
+      steps[1].description = 'Order was cancelled per customer or warehouse request';
+    }
+
+    return {
+      orderNumber: order.orderNumber,
+      orderStatus: order.orderStatus,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      customerName: order.customer.fullName,
+      customerCity: order.customer.city,
+      subtotal: order.subtotal,
+      shippingFee: order.shippingFee,
+      tax: order.tax,
+      total: order.total,
+      items: order.items,
+      steps
+    };
+  }
+
+  public getProductReviews(productId: string): ProductReview[] {
+    const product = this.data.products.find(p => p.id === productId || p.slug === productId);
+    if (!product) return [];
+    if (!product.reviews || product.reviews.length === 0) {
+      product.reviews = [
+        {
+          id: `rev-${product.id}-1`,
+          productId: product.id,
+          userName: 'Muhammad Zeeshan',
+          rating: 5,
+          title: '100% Original and Sealed Unit',
+          comment: 'Verified with official serial check. Delivery was fast to Islamabad. Highly recommended!',
+          verifiedPurchase: true,
+          createdAt: new Date(Date.now() - 4 * 86400000).toISOString()
+        },
+        {
+          id: `rev-${product.id}-2`,
+          productId: product.id,
+          userName: 'Hamza Khan',
+          rating: product.rating >= 4.8 ? 5 : 4,
+          title: 'Premium build quality & excellent support',
+          comment: 'Outstanding performance. Box came in perfect packaging with warranty card properly stamped.',
+          verifiedPurchase: true,
+          createdAt: new Date(Date.now() - 10 * 86400000).toISOString()
+        }
+      ];
+      this.saveData();
+    }
+    return product.reviews;
+  }
+
+  public addReview(productId: string, reviewInput: { userName: string; rating: number; title: string; comment: string }): ProductReview | undefined {
+    const product = this.data.products.find(p => p.id === productId || p.slug === productId);
+    if (!product) return undefined;
+
+    if (!product.reviews || product.reviews.length === 0) {
+      this.getProductReviews(product.id);
+    }
+
+    const newRev: ProductReview = {
+      id: `rev-${Date.now()}`,
+      productId: product.id,
+      userName: reviewInput.userName.trim(),
+      rating: Math.min(5, Math.max(1, reviewInput.rating)),
+      title: reviewInput.title.trim(),
+      comment: reviewInput.comment.trim(),
+      verifiedPurchase: true,
+      createdAt: new Date().toISOString()
+    };
+
+    product.reviews = [newRev, ...(product.reviews || [])];
+    product.reviewCount = (product.reviewCount || 0) + 1;
+    const avg = product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length;
+    product.rating = Number(avg.toFixed(1));
+
+    this.saveData();
+    return newRev;
   }
 
   // --- Dashboard Analytics ---

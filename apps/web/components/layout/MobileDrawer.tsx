@@ -21,10 +21,13 @@ import {
   Info, 
   Mail, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Heart
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { useCurrency } from '../../context/CurrencyContext';
+import { useWishlist } from '../../context/WishlistContext';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -45,6 +48,8 @@ const CATEGORIES = [
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const { currency, setCurrency } = useCurrency();
+  const { wishlistCount } = useWishlist();
 
   // Prevent background body scroll when drawer is open
   useEffect(() => {
@@ -101,6 +106,67 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-6">
+          {/* Quick Action Tools: Tracking, Wishlist, Currency */}
+          <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/track-order"
+                onClick={onClose}
+                className="p-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-black text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
+                style={{
+                  backgroundColor: 'var(--surface-elevated)',
+                  borderColor: 'var(--border)'
+                }}
+              >
+                <Truck size={15} />
+                <span>Track Order</span>
+              </Link>
+
+              <Link
+                href="/wishlist"
+                onClick={onClose}
+                className="p-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                style={{
+                  backgroundColor: 'var(--surface-elevated)',
+                  borderColor: 'var(--border)'
+                }}
+              >
+                <Heart size={15} />
+                <span>Wishlist {wishlistCount > 0 ? `(${wishlistCount})` : ''}</span>
+              </Link>
+            </div>
+
+            {/* Currency Pill */}
+            <div
+              className="p-2 rounded-xl border flex items-center justify-between text-xs font-bold"
+              style={{
+                backgroundColor: 'var(--surface-elevated)',
+                borderColor: 'var(--border)'
+              }}
+            >
+              <span style={{ color: 'var(--foreground-muted)' }}>Store Currency:</span>
+              <div className="inline-flex rounded-lg border border-slate-700 bg-slate-800 p-0.5 text-[11px] font-black">
+                <button
+                  type="button"
+                  onClick={() => setCurrency('PKR')}
+                  className={`px-2 py-0.5 rounded transition-colors ${
+                    currency === 'PKR' ? 'bg-blue-600 text-white' : 'text-slate-400'
+                  }`}
+                >
+                  PKR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrency('USD')}
+                  className={`px-2 py-0.5 rounded transition-colors ${
+                    currency === 'USD' ? 'bg-blue-600 text-white' : 'text-slate-400'
+                  }`}
+                >
+                  USD
+                </button>
+              </div>
+            </div>
+          </div>
           {/* Quick Announcement Pill */}
           <div
             className="p-3 rounded-xl border flex items-center gap-2.5 text-xs font-semibold"

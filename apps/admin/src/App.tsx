@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminThemeProvider } from './context/AdminThemeContext';
 import { AdminSidebar, AdminTab } from './components/AdminSidebar';
 import { AdminHeader } from './components/AdminHeader';
+import { AdminLogin } from './components/AdminLogin';
 import { Dashboard } from './pages/Dashboard';
 import { ProductsManager } from './pages/ProductsManager';
 import { OrdersManager } from './pages/OrdersManager';
@@ -9,8 +10,29 @@ import { CategoriesManager } from './pages/CategoriesManager';
 import { Settings } from './pages/Settings';
 
 export const AppContent: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('ue_admin_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const [currentTab, setCurrentTab] = useState<AdminTab>('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('ue_admin_auth');
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+  };
+
+  if (!isAuthenticated) {
+    return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   const tabTitles: Record<AdminTab, { title: string; subtitle: string }> = {
     dashboard: {
@@ -65,6 +87,7 @@ export const AppContent: React.FC = () => {
           title={tabTitles[currentTab].title}
           subtitle={tabTitles[currentTab].subtitle}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)}
+          onLogout={handleLogout}
         />
         <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
           {renderContent()}
