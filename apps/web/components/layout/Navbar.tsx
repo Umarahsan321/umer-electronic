@@ -7,7 +7,6 @@ import {
   Search, 
   ShoppingCart, 
   Menu, 
-  ExternalLink, 
   ShieldCheck, 
   PhoneCall
 } from 'lucide-react';
@@ -118,16 +117,6 @@ export const Navbar: React.FC = () => {
               >
                 7-Day Returns
               </Link>
-              <span className="hidden sm:inline text-slate-600">|</span>
-              <a
-                href="http://localhost:3001"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold"
-              >
-                <span>Admin</span>
-                <ExternalLink size={11} />
-              </a>
             </div>
           </div>
         </div>
